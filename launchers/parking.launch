@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="my_package" type="camera_reader_node.py" name="camera_reader_node" output="screen" />
+    <node pkg="my_package" type="parking_logic_node.py" name="parking_logic_node" output="screen" />
+    <node pkg="my_package" type="wheel_control_node.py" name="wheel_control_node" output="screen" />
+
+</launch>
