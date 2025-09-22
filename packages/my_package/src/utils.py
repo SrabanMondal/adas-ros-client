@@ -11,11 +11,11 @@ class LineDetector:
         # --- HSV Color Ranges ---
         # Yeh values aapko apni lighting conditions ke hisaab se tune karni pad sakti hain
         # Safed rang ke liye HSV range
-        self.white_lower = np.array([0, 0, 150])
-        self.white_upper = np.array([180, 50, 255])
+        self.white_lower = np.array([0, 0, 0])
+        self.white_upper = np.array([0, 0, 0])
         # Neele rang ke liye HSV range
-        self.blue_lower = np.array([100, 150, 0])
-        self.blue_upper = np.array([140, 255, 255])
+        self.blue_lower = np.array([0, 0, 0])
+        self.blue_upper = np.array([0, 0, 0])
 
     def _detect_line(self, image, hsv_lower, hsv_upper):
         """

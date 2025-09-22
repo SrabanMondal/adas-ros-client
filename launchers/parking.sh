@@ -1,7 +1,6 @@
 #!/bin/bash
 
 source /environment.sh
-source /workspace/catkin_ws/devel/setup.bash
 
 dt-launchfile-init
 
