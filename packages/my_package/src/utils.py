@@ -1,21 +1,25 @@
-# packages/my_package/src/utils.py
-
 import cv2
 import numpy as np
 
 class LineDetector:
     """
-    Ek class jo Duckiebot ke camera feed se safed aur neeli lines detect karti hai.
+    Ek class jo Duckiebot ke camera feed se safed, neeli aur kaali lines detect karti hai.
     """
     def __init__(self):
         # --- HSV Color Ranges ---
         # Yeh values aapko apni lighting conditions ke hisaab se tune karni pad sakti hain
+        
         # Safed rang ke liye HSV range
         self.white_lower = np.array([0, 0, 0])
-        self.white_upper = np.array([0, 0, 0])
+        self.white_upper = np.array([0, 0, 255])
+        
         # Neele rang ke liye HSV range
-        self.blue_lower = np.array([0, 0, 0])
-        self.blue_upper = np.array([0, 0, 0])
+        self.blue_lower = np.array([100, 150, 0])
+        self.blue_upper = np.array([140, 255, 255])
+        
+        # Kaale rang ke liye HSV range (Low V value)
+        self.black_lower = np.array([0, 0, 0])
+        self.black_upper = np.array([180, 255, 30])  # Adjusting the V (Value) to be low for black
 
     def _detect_line(self, image, hsv_lower, hsv_upper):
         """
@@ -48,3 +52,7 @@ class LineDetector:
     def detect_blue_line(self, image):
         """Neeli line detect karti hai."""
         return self._detect_line(image, self.blue_lower, self.blue_upper)
+
+    def detect_black_line(self, image):
+        """Kaali line detect karti hai."""
+        return self._detect_line(image, self.black_lower, self.black_upper)
