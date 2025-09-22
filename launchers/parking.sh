@@ -5,6 +5,6 @@ source /environment.sh
 dt-launchfile-init
 
 # Ek-ek script ki jagah, ab humari main .launch file ko start karo
-roslaunch my_package parking_logic_node.py
+rosrun my_package parking_logic_node.py
 
 dt-launchfile-join
