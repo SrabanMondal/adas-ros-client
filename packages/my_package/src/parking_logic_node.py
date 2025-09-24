@@ -39,6 +39,12 @@ class ParkingLogicNode(DTROS):
         # --- Publishers and Subscribers ---
         self._wheels_pub = rospy.Publisher(self._wheels_topic, WheelsCmdStamped, queue_size=1)
         self._camera_sub = rospy.Subscriber(self._camera_topic, CompressedImage, self.camera_callback)
+        self._processed_image_pub = rospy.Publisher(
+            f"/{self._vehicle_name}/parking_node/image/processed/compressed",
+            CompressedImage,
+            queue_size=1
+        )
+
         
         # --- Image Processing ---
         self._bridge = CvBridge()
@@ -48,7 +54,7 @@ class ParkingLogicNode(DTROS):
 
         # --- State Machine Logic ---
         if self.state == "SEARCHING":
-            blue_line_pos = self.detector.detect_blue_line(image)
+            proc_img, blue_line_pos = self.detector.detect_blue_line(image)
             
             if blue_line_pos is not None:
                 rospy.loginfo("Safed line mili. Aligning...")
@@ -66,7 +72,7 @@ class ParkingLogicNode(DTROS):
                 self.state = "SEARCHING"
                 return
 
-            blue_line_pos = self.detector.detect_blue_line(image)
+            proc_img, blue_line_pos = self.detector.detect_blue_line(image)
             
             if blue_line_pos is not None:
                 cx, cy = blue_line_pos
@@ -110,6 +116,9 @@ class ParkingLogicNode(DTROS):
             self.send_wheel_commands(0, 0)
             rospy.loginfo("Bot park ho chuka hai. Stopping camera feed.")
             self._camera_sub.unregister()
+        self._processed_image_pub.publish(
+            self._bridge.cv2_to_compressed_imgmsg(proc_img)
+        )
 
     def send_wheel_commands(self, vel_left, vel_right):
         msg = WheelsCmdStamped(vel_left=vel_left, vel_right=vel_right)

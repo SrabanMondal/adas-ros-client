@@ -27,7 +27,7 @@ class LineDetector:
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         # Diye gaye rang ka mask banao
         mask = cv2.inRange(hsv, hsv_lower, hsv_upper)
-        
+        processed_img = cv2.bitwise_and(image, image, mask=mask)
         # mask = cv2.erode(mask, None, iterations=2)
         # mask = cv2.dilate(mask, None, iterations=2)
         # Mask mein se contours (shapes) dhoondho
@@ -41,9 +41,9 @@ class LineDetector:
             if M["m00"] > 0:
                 cx = int(M["m10"] / M["m00"])
                 cy = int(M["m01"] / M["m00"])
-                return (cx, cy)
+                return processed_img, (cx, cy)
         
-        return None
+        return processed_img, None
 
     def detect_white_line(self, image):
         return self._detect_line(image, self.white_lower, self.white_upper)
