@@ -2,34 +2,34 @@ import cv2
 import numpy as np
 
 class LineDetector:
-    """
-    Ek class jo Duckiebot ke camera feed se safed, neeli aur kaali lines detect karti hai.
-    """
     def __init__(self):
         # --- HSV Color Ranges ---
-        # Yeh values aapko apni lighting conditions ke hisaab se tune karni pad sakti hain
         
-        # Safed rang ke liye HSV range
         self.white_lower = np.array([0, 0, 0])
         self.white_upper = np.array([0, 0, 255])
         
-        # Neele rang ke liye HSV range
-        self.blue_lower = np.array([100, 150, 0])
-        self.blue_upper = np.array([140, 255, 255])
+        self.blue_lower = np.array([155, 10, 42])
+        self.blue_upper = np.array([175, 20, 50])
         
-        # Kaale rang ke liye HSV range (Low V value)
+        # self.blue_lower = np.array([155, 50, 40])
+        # self.blue_upper = np.array([175, 255, 255])
+
+    
+        
         self.black_lower = np.array([0, 0, 0])
-        self.black_upper = np.array([180, 255, 30])  # Adjusting the V (Value) to be low for black
+        self.black_upper = np.array([180, 255, 30])
 
     def _detect_line(self, image, hsv_lower, hsv_upper):
         """
-        Helper function jo diye gaye HSV range ke hisaab se line detect karti hai.
-        Agar line milti hai, toh uska center (cx, cy) return karti hai, warna None.
+        Helper function to detect line
         """
         # Image ko HSV color space mein convert karo
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         # Diye gaye rang ka mask banao
         mask = cv2.inRange(hsv, hsv_lower, hsv_upper)
+        
+        # mask = cv2.erode(mask, None, iterations=2)
+        # mask = cv2.dilate(mask, None, iterations=2)
         # Mask mein se contours (shapes) dhoondho
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -46,13 +46,10 @@ class LineDetector:
         return None
 
     def detect_white_line(self, image):
-        """Safed line detect karti hai."""
         return self._detect_line(image, self.white_lower, self.white_upper)
 
     def detect_blue_line(self, image):
-        """Neeli line detect karti hai."""
         return self._detect_line(image, self.blue_lower, self.blue_upper)
 
     def detect_black_line(self, image):
-        """Kaali line detect karti hai."""
         return self._detect_line(image, self.black_lower, self.black_upper)

@@ -48,9 +48,9 @@ class ParkingLogicNode(DTROS):
 
         # --- State Machine Logic ---
         if self.state == "SEARCHING":
-            white_line_pos = self.detector.detect_black_line(image)
+            blue_line_pos = self.detector.detect_blue_line(image)
             
-            if white_line_pos is not None:
+            if blue_line_pos is not None:
                 rospy.loginfo("Safed line mili. Aligning...")
                 self.state = "ALIGNING"
                 # --- MODIFICATION 2: Timeout timer shuru karo ---
@@ -66,7 +66,7 @@ class ParkingLogicNode(DTROS):
                 self.state = "SEARCHING"
                 return
 
-            blue_line_pos = self.detector.detect_black_line(image)
+            blue_line_pos = self.detector.detect_blue_line(image)
             
             if blue_line_pos is not None:
                 cx, cy = blue_line_pos
