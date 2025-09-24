@@ -50,6 +50,7 @@ class ParkingLogicNode(DTROS):
         self._bridge = CvBridge()
 
     def camera_callback(self, msg):
+        proc_img = None
         image = self._bridge.compressed_imgmsg_to_cv2(msg)
 
         # --- State Machine Logic ---
@@ -116,9 +117,10 @@ class ParkingLogicNode(DTROS):
             self.send_wheel_commands(0, 0)
             rospy.loginfo("Bot park ho chuka hai. Stopping camera feed.")
             self._camera_sub.unregister()
-        self._processed_image_pub.publish(
-            self._bridge.cv2_to_compressed_imgmsg(proc_img)
-        )
+        if proc_img is not None:
+            self._processed_image_pub.publish(
+                self._bridge.cv2_to_compressed_imgmsg(proc_img)
+            )
 
     def send_wheel_commands(self, vel_left, vel_right):
         msg = WheelsCmdStamped(vel_left=vel_left, vel_right=vel_right)
