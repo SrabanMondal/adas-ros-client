@@ -24,7 +24,7 @@ class ParkingLogicNode(DTROS):
 
         # --- MODIFICATION 2: Timeout ke liye variables ---
         self.align_start_time = None
-        self.align_timeout = rospy.Duration(5.0) # 5 second ka timeout
+        self.align_timeout = rospy.Duration(30.0) # 5 second ka timeout
 
         # --- MODIFICATION 1: Proportional Controller ke liye variables ---
         self.camera_width = 640 # Aapki camera image ki width
