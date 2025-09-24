@@ -27,7 +27,12 @@ class LineDetector:
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         # Diye gaye rang ka mask banao
         mask = cv2.inRange(hsv, hsv_lower, hsv_upper)
+        kernel = np.ones((5,5), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
         processed_img = cv2.bitwise_and(image, image, mask=mask)
+        processed_img = cv2.GaussianBlur(processed_img, (5,5), 0)
+
         # mask = cv2.erode(mask, None, iterations=2)
         # mask = cv2.dilate(mask, None, iterations=2)
         # Mask mein se contours (shapes) dhoondho
