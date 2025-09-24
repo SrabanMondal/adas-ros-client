@@ -8,11 +8,11 @@ class LineDetector:
         self.white_lower = np.array([0, 0, 0])
         self.white_upper = np.array([0, 0, 255])
         
-        self.blue_lower = np.array([155, 10, 42])
-        self.blue_upper = np.array([175, 20, 50])
+        # self.blue_lower = np.array([155, 10, 42])
+        # self.blue_upper = np.array([175, 20, 50])
         
-        # self.blue_lower = np.array([155, 50, 40])
-        # self.blue_upper = np.array([175, 255, 255])
+        self.blue_lower = np.array([155, 50, 40])
+        self.blue_upper = np.array([175, 255, 255])
 
     
         
