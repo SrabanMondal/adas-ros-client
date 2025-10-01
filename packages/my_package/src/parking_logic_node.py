@@ -9,7 +9,8 @@ import cv2
 import numpy as np
 from cv_bridge import CvBridge
 from my_package.src.utils import LineDetector
-
+from my_package.src.perception import LanePerception
+from my_package.src.controller import PurePursuitController
 class ParkingLogicNode(DTROS):
 
     def __init__(self, node_name):
@@ -53,29 +54,16 @@ class ParkingLogicNode(DTROS):
         proc_img = None
         image = self._bridge.compressed_imgmsg_to_cv2(msg)
 
-        # --- Detect line ---
-        proc_img, blue_line_pos = self.detector.detect_blue_line(image)
+        # --- Perception ---
+        proc_img, lookahead_pt = self.perception.detect(image)
 
-        if blue_line_pos is not None:
-            cx, cy = blue_line_pos
-            # Proportional steering
-            error = self.image_center - cx
-            steering_adjustment = self.kp * (error / self.image_center)
-            base_speed = 0.15
-            vel_left = base_speed - steering_adjustment
-            vel_right = base_speed + steering_adjustment
-            rospy.loginfo(f"Line detected. Error: {error}, Steering: {steering_adjustment}")
-            self.send_wheel_commands(vel_left, vel_right)
-        else:
-            # Line nahi dikh rahi → slow forward
-            rospy.logwarn("Line lost! Moving slowly forward.")
-            self.send_wheel_commands(0.1, 0.1)
+        # --- Control ---
+        vel_left, vel_right = self.controller.compute_control(self.image_center, lookahead_pt)
+        self.send_wheel_commands(vel_left, vel_right)
 
         # --- Publish processed image ---
-        if proc_img is not None:
-            self._processed_image_pub.publish(
-                self._bridge.cv2_to_compressed_imgmsg(proc_img)
-            )
+        proc_msg = self._bridge.cv2_to_compressed_imgmsg(proc_img)
+        self._processed_image_pub.publish(proc_msg)
 
     def send_wheel_commands(self, vel_left, vel_right):
         msg = WheelsCmdStamped(vel_left=vel_left, vel_right=vel_right)

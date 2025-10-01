@@ -5,8 +5,9 @@ class LineDetector:
     def __init__(self):
         # --- HSV Color Ranges ---
         
-        self.white_lower = np.array([0, 0, 0])
-        self.white_upper = np.array([0, 0, 255])
+        self.white_lower = np.array([0, 0, 200])
+        self.white_upper = np.array([180, 40, 255])
+
         
         # self.blue_lower = np.array([155, 10, 42])
         # self.blue_upper = np.array([175, 20, 50])
