@@ -1,6 +1,6 @@
 # parameters
 ARG REPO_NAME="ros-test"
-ARG DESCRIPTION="a test ros"
+ARG DESCRIPTION="Web-controlled Duckiebot with Manual/Auto driving modes"
 ARG MAINTAINER="SrabanMondal srabanmondal1@gmail.com"
 # pick an icon from: https://fontawesome.com/v4.7.0/icons/
 ARG ICON="cube"
