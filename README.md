@@ -29,40 +29,40 @@ Built on the **Duckietown `template-ros` (v3)** scaffold with **ROS** (Noetic) a
 
 ## Features
 
-| Feature | Description |
-|---|---|
-| **Manual Driving** | Interactive canvas steering wheel (±27°) and speed slider (0–0.2 m/s) |
-| **Auto Mode** | Connect to any external SSE stream sending `{steer, brake}` telemetry |
+| Feature            | Description                                                            |
+| ------------------ | ---------------------------------------------------------------------- |
+| **Manual Driving** | Interactive canvas steering wheel (±27°) and speed slider (0–0.2 m/s)  |
+| **Auto Mode**      | Connect to any external SSE stream sending `{steer, brake}` telemetry  |
 | **Live Telemetry** | Real-time display of steering angle, brake force, and wheel velocities |
-| **Emergency Stop** | One-tap button that immediately zeroes all wheel commands |
-| **Safety Timeout** | Wheels auto-stop if no control update is received within 500 ms |
-| **Lightweight** | Single-process design — Flask runs in a thread inside the ROS node |
-| **Cross-Device** | Responsive UI works on desktops, tablets, and phones |
+| **Emergency Stop** | One-tap button that immediately zeroes all wheel commands              |
+| **Safety Timeout** | Wheels auto-stop if no control update is received within 500 ms        |
+| **Lightweight**    | Single-process design — Flask runs in a thread inside the ROS node     |
+| **Cross-Device**   | Responsive UI works on desktops, tablets, and phones                   |
 
 ---
 
 ## Architecture
 
 ```
-┌───────────────────────── Duckiebot (Docker) ──────────────────────────┐
+┌───────────────────────── Duckiebot (Docker) ───────────────────────────┐
 │                                                                        │
 │   control_node.py  (single process)                                    │
 │   ┌────────────────────────────┬──────────────────────────────────┐    │
-│   │  Flask Thread (port 8080)  │  ROS Timer (10 Hz)              │    │
+│   │  Flask Thread (port 8080)  │  ROS Timer (10 Hz)               │    │
 │   │  ──────────────────────    │  ─────────────────────────────   │    │
-│   │  GET  /         → UI      │  Reads shared state              │    │
-│   │  POST /api/control        │  Converts steer,brake → wheels   │    │
-│   │  POST /api/mode           │  Publishes WheelsCmdStamped      │    │
-│   │  GET  /api/status         │  Safety timeout (500 ms)         │    │
+│   │  GET  /         → UI       │  Reads shared state              │    │
+│   │  POST /api/control         │  Converts steer,brake → wheels   │    │
+│   │  POST /api/mode            │  Publishes WheelsCmdStamped      │    │
+│   │  GET  /api/status          │  Safety timeout (500 ms)         │    │
 │   └────────────────────────────┴──────────────────────────────────┘    │
 │                                       ↓ publishes                      │
-│                     /{VEHICLE_NAME}/wheels_driver_node/wheels_cmd       │
+│                     /{VEHICLE_NAME}/wheels_driver_node/wheels_cmd      │
 └────────────────────────────────────────────────────────────────────────┘
          ↑ HTTP (port 8080)
-┌────────────────────┐        ┌───────────────────────┐
+┌────────────────────┐        ┌────────────────────────┐
 │  Browser (Laptop)  │ ──────→│  External SSE Source   │
 │  Manual Controls   │        │  (Auto Mode, optional) │
-└────────────────────┘        └───────────────────────┘
+└────────────────────┘        └────────────────────────┘
 ```
 
 **Why single-process?** Running Flask in a daemon thread inside the ROS node eliminates inter-process communication overhead. Steer/brake values are shared via a `threading.Lock`-protected state, keeping latency minimal on the Duckiebot's constrained hardware.
@@ -121,9 +121,11 @@ Before you begin, make sure you have:
 4. **Network access** — Your laptop/phone must be on the same network as the Duckiebot
 
 > **Verify connectivity:**
+>
 > ```bash
 > ping ROBOT_NAME.local
 > ```
+>
 > Replace `ROBOT_NAME` with your Duckiebot's hostname throughout this guide.
 
 ---
@@ -143,9 +145,9 @@ cd ros-test
 dts devel build -f -H ROBOT_NAME
 ```
 
-| Flag | Purpose |
-|------|---------|
-| `-f` | Force rebuild (ignores cache) |
+| Flag            | Purpose                                        |
+| --------------- | ---------------------------------------------- |
+| `-f`            | Force rebuild (ignores cache)                  |
 | `-H ROBOT_NAME` | Build directly on the Duckiebot hardware (ARM) |
 
 > **Note:** The first build may take several minutes as it pulls the base image (`dt-ros-commons:daffy`) and installs Flask. Subsequent builds are faster due to Docker layer caching.
@@ -153,8 +155,9 @@ dts devel build -f -H ROBOT_NAME
 ### 3. Verify the build
 
 A successful build ends with:
+
 ```
-Successfully tagged duckietown/ros-test:v1-... 
+Successfully tagged duckietown/ros-test:v1-...
 ```
 
 ---
@@ -168,6 +171,7 @@ dts devel run -H ROBOT_NAME
 ```
 
 On startup you should see the log message:
+
 ```
 [ControlNode] Ready  —  UI at http://0.0.0.0:8080
 ```
@@ -181,6 +185,7 @@ http://ROBOT_NAME.local:8080
 ```
 
 > **Alternative:** If `.local` mDNS doesn't work, use the Duckiebot's IP address directly:
+>
 > ```
 > http://192.168.x.x:8080
 > ```
@@ -200,10 +205,8 @@ This is the default mode when the UI loads.
 1. **Steering Wheel** — Click/tap and drag to rotate the on-screen steering wheel
    - Range: **-27°** (left) to **+27°** (right)
    - Double-click to snap back to center (0°)
-   
 2. **Speed Slider** — Drag the slider to set forward speed
    - Range: **0** (stopped) to **0.2** m/s (max safe speed)
-   
 3. The UI sends control commands at **~20 Hz** while you interact, and sends keep-alive updates every **200 ms** while speed > 0
 
 ### Auto Mode
@@ -221,16 +224,17 @@ The browser will connect to the SSE stream and forward each event to the Duckieb
 }
 ```
 
-| Field | Type | Range | Description |
-|-------|------|-------|-------------|
+| Field   | Type  | Range         | Description                                      |
+| ------- | ----- | ------------- | ------------------------------------------------ |
 | `steer` | float | -27.0 to 27.0 | Steering angle in degrees. Positive = turn right |
-| `brake` | float | 0.0 to 1.0 | Brake force. 0 = no braking, ≥0.8 = full stop |
+| `brake` | float | 0.0 to 1.0    | Brake force. 0 = no braking, ≥0.8 = full stop    |
 
 > **CORS:** Your SSE server must include `Access-Control-Allow-Origin` headers for cross-origin browser connections.
 
 ### Emergency Stop
 
 The red **⛔ EMERGENCY STOP** button at the bottom of the UI:
+
 - Immediately sets steer to 0° and brake to maximum
 - Disconnects any active SSE stream
 - Resets the speed slider to 0
@@ -242,12 +246,15 @@ The red **⛔ EMERGENCY STOP** button at the bottom of the UI:
 The Flask server exposes these REST endpoints on port **8080**:
 
 ### `GET /`
+
 Serves the web control panel (`index.html`).
 
 ### `POST /api/control`
+
 Send a control command.
 
 **Request body** (JSON):
+
 ```json
 {
   "steer": 15.0,
@@ -256,28 +263,35 @@ Send a control command.
 ```
 
 **Response:**
+
 ```json
 { "status": "ok" }
 ```
 
 ### `POST /api/mode`
+
 Switch driving mode.
 
 **Request body** (JSON):
+
 ```json
 { "mode": "manual" }
 ```
+
 Accepted values: `"manual"`, `"auto"`
 
 **Response:**
+
 ```json
 { "status": "ok", "mode": "manual" }
 ```
 
 ### `GET /api/status`
+
 Poll current telemetry state.
 
 **Response:**
+
 ```json
 {
   "steer": 15.0,
@@ -294,16 +308,17 @@ Poll current telemetry state.
 
 All tuning constants are defined at the top of [`control_node.py`](packages/my_package/src/control_node.py):
 
-| Constant | Default | Description |
-|----------|---------|-------------|
-| `MAX_SPEED` | `0.2` | Maximum forward wheel speed (m/s) |
-| `MAX_STEER` | `27.0` | Maximum steering angle (degrees) |
-| `BRAKE_ZERO` | `0.8` | Brake force value at which speed reaches zero |
-| `CONTROL_HZ` | `10` | Wheel command publish rate (Hz) |
-| `SAFETY_TIMEOUT` | `0.5` | Seconds of silence before auto-stop |
-| `FLASK_PORT` | `8080` | Web server port |
+| Constant         | Default | Description                                   |
+| ---------------- | ------- | --------------------------------------------- |
+| `MAX_SPEED`      | `0.2`   | Maximum forward wheel speed (m/s)             |
+| `MAX_STEER`      | `27.0`  | Maximum steering angle (degrees)              |
+| `BRAKE_ZERO`     | `0.8`   | Brake force value at which speed reaches zero |
+| `CONTROL_HZ`     | `10`    | Wheel command publish rate (Hz)               |
+| `SAFETY_TIMEOUT` | `0.5`   | Seconds of silence before auto-stop           |
+| `FLASK_PORT`     | `8080`  | Web server port                               |
 
 After changing these values, rebuild and re-run:
+
 ```bash
 dts devel build -f -H ROBOT_NAME
 dts devel run -H ROBOT_NAME
@@ -351,8 +366,8 @@ The node converts `(steer, brake)` into left/right wheel velocities using a simp
 
 ### ROS Topics
 
-| Topic | Type | Direction | Description |
-|-------|------|-----------|-------------|
+| Topic                                           | Type                               | Direction | Description                 |
+| ----------------------------------------------- | ---------------------------------- | --------- | --------------------------- |
 | `/{VEHICLE_NAME}/wheels_driver_node/wheels_cmd` | `duckietown_msgs/WheelsCmdStamped` | Published | Left/right wheel velocities |
 
 The `VEHICLE_NAME` is read from the environment variable set by the Duckietown runtime.
@@ -362,11 +377,13 @@ The `VEHICLE_NAME` is read from the environment variable set by the Duckietown r
 ## Troubleshooting
 
 ### UI doesn't load
+
 - Verify the Duckiebot is reachable: `ping ROBOT_NAME.local`
 - Check that port 8080 isn't blocked by a firewall
 - Try using the IP address directly instead of `.local`
 
 ### Wheels don't move
+
 - Ensure the speed slider is above 0 (brake force must be below 0.8)
 - Check ROS topic output on the Duckiebot:
   ```bash
@@ -377,11 +394,13 @@ The `VEHICLE_NAME` is read from the environment variable set by the Duckietown r
 - Verify `VEHICLE_NAME` is set correctly in the container environment
 
 ### Auto Mode SSE not connecting
+
 - Ensure your SSE server sets CORS headers (`Access-Control-Allow-Origin: *`)
 - Check the browser console (F12 → Console) for connection errors
 - Verify the SSE URL is accessible from the browser's network
 
 ### Build fails
+
 - Run `dts update` to ensure you have the latest Duckietown Shell
 - Use `-f` flag to force a clean rebuild: `dts devel build -f -H ROBOT_NAME`
 - Check that the Duckiebot has sufficient disk space: `ssh duckie@ROBOT_NAME.local "df -h"`
@@ -406,11 +425,11 @@ The `VEHICLE_NAME` is read from the environment variable set by the Duckietown r
 
 ### Adding dependencies
 
-| Dependency type | File |
-|---|---|
-| System packages (apt) | `dependencies-apt.txt` |
-| Python packages (pip) | `dependencies-py3.txt` |
-| Duckietown libraries | `dependencies-py3.dt.txt` |
+| Dependency type       | File                      |
+| --------------------- | ------------------------- |
+| System packages (apt) | `dependencies-apt.txt`    |
+| Python packages (pip) | `dependencies-py3.txt`    |
+| Duckietown libraries  | `dependencies-py3.dt.txt` |
 
 ### Adding new launchers
 
